@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kháng Chiến Kiến Quốc</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+
+        /* Audio Controls */
+        .audio-control {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            padding: 15px 25px;
+            border-radius: 50px;
+            color: #ffd700;
+            font-size: 2em;
+            cursor: pointer;
+            z-index: 1001;
+            transition: all 0.3s;
+            border: 3px solid #ffd700;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+
+        .audio-control:hover {
+            background: rgba(255,215,0,0.3);
+            transform: scale(1.1);
+            box-shadow: 0 8px 20px rgba(255,215,0,0.5);
+        }
+
+        .screen {
+            display: none;
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* Start Screen */
+        #startScreen {
+            background: linear-gradient(135deg, #da2032 0%, #8b0000 100%);
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            animation: flagWave 3s ease-in-out infinite;
+        }
+
+        @keyframes flagWave {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .title {
+            font-size: 3.5em;
+            color: #ffd700;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.8);
+            margin-bottom: 20px;
+            text-align: center;
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 10px #ffd700, 0 0 20px #ffd700; }
+            50% { text-shadow: 0 0 20px #ffd700, 0 0 40px #ffd700, 0 0 60px #ff0000; }
+        }
+
+        .star {
+            font-size: 4em;
+            color: #ffd700;
+            margin: 20px;
+            animation: rotate 4s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .btn {
+            padding: 20px 50px;
+            font-size: 1.8em;
+            background: #ffd700;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            font-weight: bold;
+            color: #8b0000;
+        }
+
+        .btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(255,215,0,0.5);
+        }
+
+        .btn-small {
+            padding: 10px 25px;
+            font-size: 1.2em;
+        }
+
+        /* Achievements Display */
+        .achievements-display {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.7);
+            padding: 15px 25px;
+            border-radius: 15px;
+            color: #ffd700;
+            font-size: 1.2em;
+            z-index: 100;
+        }
+
+        .achievement-item {
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .achievement-icon {
+            font-size: 1.5em;
+        }
+
+        /* History Button */
+        .history-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: #ffd700;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.8em;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .history-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 20px rgba(255,215,0,0.5);
+        }
+
+        /* History Panel */
+        .history-panel {
+            position: fixed;
+            left: -400px;
+            top: 0;
+            width: 400px;
+            height: 100vh;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            box-shadow: 5px 0 20px rgba(0,0,0,0.5);
+            transition: left 0.5s;
+            z-index: 999;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .history-panel.open {
+            left: 0;
+        }
+
+        .history-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #da2032;
+            color: white;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        .history-title {
+            color: #ffd700;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            text-align: center;
+            padding-top: 20px;
+        }
+
+        .history-item {
+            background: rgba(255,255,255,0.1);
+            border-left: 4px solid #ffd700;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            color: white;
+            opacity: 0.3;
+            transition: all 0.3s;
+        }
+
+        .history-item.unlocked {
+            opacity: 1;
+            border-left-color: #28a745;
+        }
+
+        .history-item h3 {
+            color: #ffd700;
+            margin-bottom: 10px;
+        }
+
+        .history-item.locked::before {
+            content: "🔒 ";
+        }
+
+        .history-item.unlocked::before {
+            content: "✓ ";
+            color: #28a745;
+        }
+
+        /* Interlude Screen */
+        #interludeScreen {
+            background: linear-gradient(135deg, #8b0000 0%, #da2032 100%);
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            animation: slideIn 1s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Map Screen */
+        #mapScreen {
+            background: linear-gradient(135deg, #2a9d8f 0%, #264653 100%);
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .map-container {
+            position: relative;
+            width: 500px;
+            height: 600px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 20px;
+        }
+
+        .region {
+            position: absolute;
+            padding: 15px 20px;
+            background: rgba(139,0,0,0.7);
+            border: 3px solid #ffd700;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .region:hover {
+            transform: scale(1.1);
+            background: rgba(218,32,50,0.9);
+            box-shadow: 0 0 20px #ffd700;
+        }
+
+        .region.completed {
+            background: rgba(42,157,143,0.9);
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        #bac { top: 50px; left: 50%; transform: translateX(-50%); }
+        #bactb { top: 200px; left: 50%; transform: translateX(-50%); }
+        #namtb { top: 320px; left: 50%; transform: translateX(-50%); }
+        #taynguyen { top: 440px; left: 20%; }
+        #nambo { top: 500px; left: 50%; transform: translateX(-50%); }
+
+        .progress-text {
+            color: #ffd700;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+        /* Question Screen */
+        #questionScreen {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .question-box {
+            background: rgba(255,255,255,0.95);
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 800px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        .close-question {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .close-question:hover {
+            background: #c82333;
+        }
+
+        .question-text {
+            font-size: 1.4em;
+            margin-bottom: 30px;
+            color: #1a1a2e;
+            line-height: 1.6;
+        }
+
+        .answer-option {
+            padding: 15px 20px;
+            margin: 10px 0;
+            background: #e9ecef;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1.1em;
+        }
+
+        .answer-option:hover {
+            background: #ffd700;
+            border-color: #ffc107;
+            transform: translateX(10px);
+        }
+
+        .answer-option.correct {
+            background: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+
+        .answer-option.wrong {
+            background: #dc3545;
+            color: white;
+            border-color: #dc3545;
+        }
+
+        /* Battle Screen */
+        #battleScreen {
+            background: linear-gradient(135deg, #2d1b00 0%, #4a3520 100%);
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .battle-map {
+            position: relative;
+            width: 600px;
+            height: 700px;
+        }
+
+        .vietnam-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 300px;
+            background: rgba(218,32,50,0.8);
+            border: 3px solid #ffd700;
+            border-radius: 100px 100px 50px 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .enemy {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 2.5em;
+            transition: all 0.3s;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .enemy:hover {
+            transform: scale(1.2) !important;
+            filter: brightness(1.2);
+        }
+
+        .enemy.defeated {
+            opacity: 0.3;
+            pointer-events: none;
+            animation: fadeOut 1s ease-out;
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; transform: scale(1); }
+            to { opacity: 0.3; transform: scale(0.5); }
+        }
+
+        #france { top: 50px; left: 50px; background: #0055a4; }
+        #britain { bottom: 50px; left: 50px; background: #c8102e; }
+        #usa { top: 50px; right: 50px; background: #3c3b6e; }
+        #japan { bottom: 100px; right: 50px; background: #bc002d; }
+        #china { top: 200px; left: 20px; background: #de2910; }
+
+        /* Drag and Drop */
+        .sortable-container {
+            min-height: 300px;
+        }
+
+        .sortable-item {
+            padding: 15px;
+            margin: 10px 0;
+            background: #e9ecef;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            cursor: move;
+            transition: all 0.3s;
+        }
+
+        .sortable-item:hover {
+            background: #ffd700;
+        }
+
+        .sortable-item.dragging {
+            opacity: 0.5;
+        }
+
+        /* Checkbox */
+        .checkbox-option {
+            padding: 15px;
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            background: #e9ecef;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .checkbox-option input {
+            width: 20px;
+            height: 20px;
+            margin-right: 15px;
+            cursor: pointer;
+        }
+
+        .checkbox-option:hover {
+            background: #ffd700;
+        }
+
+        /* Victory Screen */
+        #victoryScreen {
+            background: linear-gradient(135deg, #da2032 0%, #ffd700 100%);
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            animation: victory 2s ease-in-out;
+        }
+
+        @keyframes victory {
+            0% { opacity: 0; transform: scale(0.5); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .victory-text {
+            font-size: 3em;
+            color: white;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.8);
+            text-align: center;
+            margin: 20px;
+        }
+
+        .firework {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            background: #ffd700;
+            border-radius: 50%;
+            animation: firework 1s ease-out infinite;
+        }
+
+        @keyframes firework {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(20); opacity: 0; }
+        }
+
+        /* Unlock notification */
+        .unlock-notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #ffd700 0%, #ff6b6b 100%);
+            padding: 30px 50px;
+            border-radius: 20px;
+            color: white;
+            font-size: 1.5em;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            z-index: 2000;
+            animation: popIn 0.5s ease-out;
+            display: none;
+        }
+
+        .unlock-notification.show {
+            display: block;
+        }
+
+        @keyframes popIn {
+            0% { transform: translate(-50%, -50%) scale(0); }
+            50% { transform: translate(-50%, -50%) scale(1.1); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- Audio Elements -->
+    <audio id="chapter1Music" loop>
+        <source src="menugamemusic.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="chapter2Music" loop>
+        <source src="music2.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="victoryMusic" loop>
+        <source src="end.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Audio Control Button -->
+    <div class="audio-control" onclick="toggleAudio()" id="audioBtn">🔊</div>
+
+    <!-- History Button -->
+    <button class="history-btn" onclick="toggleHistory()">📜</button>
+    
+    <!-- Delete Progress Button -->
+    <button class="history-btn" onclick="deleteProgress()" style="top: 90px; background: #dc3545;">🗑️</button>
+
+    <!-- History Panel -->
+    <div class="history-panel" id="historyPanel">
+        <button class="history-close" onclick="toggleHistory()">×</button>
+        <div class="history-title">📚 LỊCH SỬ MỞ KHÓA</div>
+        <div id="historyContent"></div>
+    </div>
+
+    <!-- Unlock Notification -->
+    <div class="unlock-notification" id="unlockNotification">
+        🎉 Đã mở khóa lịch sử mới! 🎉
+    </div>
+
+    <!-- Start Screen -->
+    <div id="startScreen" class="screen active">
+        <div class="title">VIỆT NAM SAU CÁCH MẠNG THÁNG 8 - 1945</div>
+        <div class="star">★</div>
+        <div class="title" style="font-size: 2em;">KHÁNG CHIẾN KIẾN QUỐC</div>
+        <div style="margin-top: 40px;">
+            <button class="btn" onclick="startGame()">BẮT ĐẦU</button>
+        </div>
+        <div id="startAchievements" class="achievements-display" style="display: none;">
+            <div class="achievement-item">
+                <span class="achievement-icon">✓</span>
+                <span>Chặng 1 hoàn thành</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interlude Screen -->
+    <div id="interludeScreen" class="screen">
+        <div class="title">CHƯƠNG 2</div>
+        <div class="star">⚔️</div>
+        <div class="title" style="font-size: 2.5em;">BẢO VỆ TỔ QUỐC</div>
+        <div style="margin-top: 40px;">
+            <button class="btn" onclick="startBattle()">TIẾN VÀO CHIẾN ĐẤU</button>
+        </div>
+    </div>
+
+    <!-- Map Screen -->
+    <div id="mapScreen" class="screen">
+        <div class="achievements-display">
+            <div class="achievement-item">
+                <span class="achievement-icon">🗺️</span>
+                <span id="mapProgress">Giải phóng: 0/5 vùng</span>
+            </div>
+        </div>
+        <div class="progress-text">CHƯƠNG 1: TÌNH HÌNH ĐẤT NƯỚC</div>
+        <div class="map-container" style="background-image: url('vietnam-map1.png');
+            background-size: cover;
+            background-position: center;
+            width: 500px;
+            height: 1200px;">
+            <div class="region" id="bac" onclick="askQuestion(0)">BẮC BỘ</div>
+            <div class="region" id="bactb" onclick="askQuestion(1)">BẮC TRUNG BỘ</div>
+            <div class="region" id="namtb" onclick="askQuestion(2)">NAM TRUNG BỘ</div>
+            <div class="region" id="taynguyen" onclick="askQuestion(3)">TÂY NGUYÊN</div>
+            <div class="region" id="nambo" onclick="askQuestion(4)">NAM BỘ</div>
+        </div>
+    </div>
+
+    <!-- Question Screen -->
+    <div id="questionScreen" class="screen">
+        <div class="question-box">
+            <button class="close-question" onclick="closeQuestion()">×</button>
+            <div class="question-text" id="questionText"></div>
+            <div id="answersContainer"></div>
+            <button class="btn btn-small" id="submitBtn" onclick="submitAnswer()" style="margin-top: 20px; display: none;">XÁC NHẬN</button>
+        </div>
+    </div>
+
+    <!-- Battle Screen -->
+    <div id="battleScreen" class="screen">
+        <div class="achievements-display">
+            <div class="achievement-item">
+                <span class="achievement-icon">⚔️</span>
+                <span id="battleProgress">Đánh bại: 0/5 thế lực</span>
+            </div>
+        </div>
+        <div class="progress-text">CHƯƠNG 2: BẢO VỆ TỔ QUỐC</div>
+        <div class="battle-map">
+            <div class="vietnam-center" style="background-image: url('vietnam-map1.png');
+            background-size: cover;
+            background-position: center;
+            width: 800px;
+            height: 1200px;">🇻🇳<br>VIỆT NAM</div>
+            <div class="enemy" id="france" onclick="battleQuestion(0)" style="background-image: url('flag-france.png');
+            background-size: cover;
+            background-position: center;">🇫🇷</div>
+            <div class="enemy" id="britain" onclick="battleQuestion(1)" style="background-image: url('flag-uk.png');
+            background-size: cover;
+            background-position: center;">🇬🇧</div>
+            <div class="enemy" id="usa" onclick="battleQuestion(2)" style="background-image: url('flag-usa.png');
+            background-size: cover;
+            background-position: center;">🇺🇸</div>
+            <div class="enemy" id="japan" onclick="battleQuestion(3)" style="background-image: url('flag-japan.png');
+            background-size: cover;
+            background-position: center;">🇯🇵</div>
+            <div class="enemy" id="china" onclick="battleQuestion(4)" style="background-image: url('flag-taiwan.png');
+            background-size: cover;
+            background-position: center;">🇹🇼</div>
+        </div>
+    </div>
+
+    <!-- Victory Screen -->
+    <div id="victoryScreen" class="screen">
+        <div class="victory-text">🎉 CHIẾN THẮNG! 🎉</div>
+        <div class="star" style="font-size: 6em;">★</div>
+        <div class="victory-text" style="font-size: 1.5em;">
+            Bạn đã dẫn dắt đất nước<br>
+            vượt qua thời kỳ kháng chiến kiến quốc!<br><br>
+           
+        </div>
+        <button class="btn btn-small" onclick="location.reload()" style="margin-top: 30px;">CHƠI LẠI</button>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                text: "Theo Chỉ thị Kháng chiến kiến quốc (25-11-1945), Đảng Cộng sản Đông Dương đã xác định kẻ thù chính của Việt Nam lúc bấy giờ là ai?",
+                options: ["Quân đội Anh-Ấn", "Thực dân Pháp xâm lược", "Quân đội Tưởng Giới Thạch", "Các thế lực tay sai Việt Quốc, Việt Cách"],
+                correct: 1,
+                type: "multiple"
+            },
+            {
+                text: "Đâu là hậu quả nghiêm trọng nhất của nạn đói cuối năm 1944 đầu năm 1945?",
+                options: ["50% ruộng đất bị bỏ hoang", "Ngân khố quốc gia kiệt quệ","2 triệu người dân chết đói", "95% dân số thất học"],
+                correct: 2,
+                type: "multiple"
+            },
+            {
+                text: "Theo thỏa thuận của phe Đồng minh, lực lượng quân đội nào đã đổ bộ vào Sài Gòn (phía Nam vĩ tuyến 16) từ tháng 9-1945?",
+                options: ["2 vạn quân đội Anh-Ấn","Quân đội Tưởng Giới Thạch", "Quân đội Pháp", "Quân đội Mỹ"],
+                correct: 0,
+                type: "multiple"
+            },
+            {
+                text: "Tính đến cuối năm 1946, phong trào 'Bình dân học vụ' đã đạt được thành tựu gì?",
+                options: ["Hơn 1 triệu người biết chữ Quốc ngữ", "Xóa bỏ hoàn toàn nạn mù chữ ở miền Bắc", "Chỉ các trường học cấp tiểu học được khai giảng", "Hơn 2,5 triệu người biết chữ Quốc ngữ"],
+                correct: 3,
+                type: "multiple"
+            },
+            {
+                text: "Chi phí vật chất của Kế hoạch Nava (tháng 7-1953) nhằm 'chuyển bại thành thắng' cho Pháp ở Đông Dương phần lớn do quốc gia nào thực hiện?",
+                options: ["Pháp", "Anh", "Mỹ", "Trung Quốc"],
+                correct: 2,
+                type: "multiple"
+            },
+            {
+                text: "Hãy sắp xếp các sự kiện sau theo đúng thứ tự thời gian diễn ra trong năm 1945:",
+                options: [
+                    "Quân đội Pháp nổ súng đánh chiếm Sài Gòn-Chợ Lớn",
+                    "Ban Chấp hành Trung ương Đảng ra Chỉ thị Kháng chiến kiến quốc",
+                    "Quân Pháp bắn vào cuộc mít tinh mừng ngày độc lập ở Sài Gòn",
+                    "Chính phủ lâm thời họp phiên đầu tiên"
+                ],
+                correct: [2, 3, 0, 1],
+                type: "sort"
+            },
+            {
+                text: "Hãy sắp xếp các văn kiện quan trọng sau theo đúng thứ tự thời gian ban hành (1946):",
+                options: [
+                    "Tạm ước 14-9 tại Marseill",
+                    "Hiệp định sơ bộ (6-3-1946)",
+                    "Chỉ thị Hòa để tiến",
+                    "Lời kêu gọi toàn quốc kháng chiến"
+                ],
+                correct: [1, 2, 0, 3],
+                type: "sort"
+            },
+            {
+                text: "Hãy sắp xếp các mốc thời gian sau theo thứ tự tăng dần:",
+                options: [
+                    "Liên Xô công nhận và đặt quan hệ ngoại giao với VN",
+                    "Chiến dịch Biên giới Thu Đông kết thúc thắng lợi",
+                    "Trung Quốc công nhận và đặt quan hệ ngoại giao với VN",
+                    "Đảng quyết định thành lập Đảng Lao động Việt Nam"
+                ],
+                correct: [2, 0, 1, 3],
+                type: "sort"
+            },
+            {
+                text: "Hãy sắp xếp các chiến dịch/trận chiến sau theo đúng thứ tự thời gian:",
+                options: [
+                    "Chiến dịch Việt Bắc Thu Đông (Pháp tấn công ATK)",
+                    "Cuộc kháng chiến toàn quốc bùng nổ",
+                    "Chiến dịch Biên giới Thu Đông",
+                    "Quân đội nhân dân VN đánh chiếm Điện Biên Phủ"
+                ],
+                correct: [1, 0, 2, 3],
+                type: "sort"
+            },
+            {
+                text: "Trong giai đoạn 1945–1954, Việt Nam phải đối phó với sự hiện diện quân sự, xâm lược, can thiệp hoặc hỗ trợ cho kẻ thù chính của các quốc gia/lực lượng nào? (Chọn tất cả đáp án đúng)",
+                options: [
+                    "Thực dân Pháp (Kẻ thù chính xâm lược)",
+                    "Quân đội Anh-Ấn (Đổ bộ vào Sài Gòn)",
+                    "Quân đội Tưởng Giới Thạch (Trung Hoa dân quốc)",
+                    "Liên Xô (Soviet Union)",
+                    "Quân đội Nhật Hoàng (6 vạn quân chưa giải giáp)",
+                    "Philippines",
+                    "Mỹ (Ủng hộ Tưởng, can thiệp trực tiếp)",
+                    "Lào và Campuchia (Đồng minh)"
+                ],
+                correct: [0, 1, 2, 4, 6],
+                type: "checkbox"
+            }
+        ];
+
+        const historyData = [
+            {
+                title: "Chỉ thị Kháng chiến kiến quốc (25-11-1945)",
+                content: "Sau khi Pháp nổ súng xâm lược, Ban Chấp hành Trung ương Đảng ra Chỉ thị 'Kháng chiến kiến quốc', xác định thực dân Pháp là kẻ thù chính, kêu gọi toàn dân kháng chiến. Đây là văn kiện quan trọng định hướng chiến lược kháng chiến toàn dân, toàn diện, trường kỳ."
+            },
+            {
+                title: "Nạn đói 1945 và cuộc đấu tranh 'Diệt giặc đói'",
+                content: "Nạn đói năm 1945 khiến 2 triệu người chết, để lại hậu quả nặng nề. Sau Cách mạng Tháng Tám, Chính phủ đặt ra 3 nhiệm vụ: diệt giặc đói, diệt giặc dốt, diệt giặc ngoại xâm. Nhân dân được huy động khai hoang, phát triển sản xuất, vượt qua khó khăn."
+            },
+            {
+                title: "Quân Anh-Ấn đổ bộ Nam Bộ (9-1945)",
+                content: "Theo thỏa thuận Đồng minh, 2 vạn quân Anh-Ấn đổ bộ vào Sài Gòn từ tháng 9-1945 để giải giáp quân Nhật. Họ đã bảo trợ cho Pháp quay trở lại, vũ trang cho quân Pháp, giúp chúng gây hấn và tấn công nhân dân ta ở Nam Bộ."
+            },
+            {
+                title: "Phong trào 'Bình dân học vụ' (1945-1946)",
+                content: "Để thực hiện nhiệm vụ 'diệt giặc dốt', phong trào Bình dân học vụ được triển khai sôi nổi. Đến cuối 1946, hơn 2,5 triệu người dân biết đọc biết viết chữ Quốc ngữ. Đây là thành tựu vĩ đại trong công cuộc xây dựng nền văn hóa mới."
+            },
+            {
+                title: "Kế hoạch Nava và sự can thiệp của Mỹ (1953)",
+                content: "Sau thất bại liên tiếp, tháng 7-1953 Pháp đưa ra Kế hoạch Nava nhằm 'chuyển bại thành thắng'. Mỹ đã chi trả phần lớn chi phí cho kế hoạch này, can thiệp sâu vào chiến tranh Đông Dương, nhằm ngăn chặn phong trào giải phóng dân tộc."
+            },
+            {
+                title: "Các sự kiện năm 1945: Từ Độc lập đến Kháng chiến",
+                content: "Năm 1945 chứng kiến chuỗi sự kiện lịch sử: 2-9 Pháp bắn vào mít tinh ở Sài Gòn, 3-9 Chính phủ lâm thời họp phiên đầu, đêm 22 rạng 23-9 Pháp đánh chiếm Sài Gòn, và 25-11 Chỉ thị Kháng chiến kiến quốc được ban hành. Đất nước chuyển từ hòa bình sang kháng chiến."
+            },
+            {
+                title: "Các văn kiện ngoại giao năm 1946",
+                content: "Năm 1946 là năm của ngoại giao và đấu tranh chính trị: Hiệp định sơ bộ 6-3, Chỉ thị Hòa để tiến 9-3, Tạm ước 14-9 tại Marseill, và cuối cùng là Lời kêu gọi toàn quốc kháng chiến 19-12-1946. Những văn kiện này thể hiện đường lối 'Hòa để tiến' linh hoạt của Đảng."
+            },
+            {
+                title: "Ngoại giao và Quân đội (1948-1951)",
+                content: "Giai đoạn 1948-1951 đánh dấu bước ngoặt quan trọng: Trung Quốc công nhận VN (18-1-1950), Liên Xô công nhận (30-1-1950), Chiến dịch Biên giới Thu Đông thắng lợi (17-10-1950), Đảng Lao động VN được thành lập (2-1951). Đây là thời kỳ kháng chiến chuyển sang giai đoạn mới."
+            },
+            {
+                title: "Các chiến dịch quân sự 1946-1954",
+                content: "Từ cuộc kháng chiến toàn quốc bùng nổ (19-12-1946), qua Chiến dịch Việt Bắc Thu Đông (1947) khi Pháp tấn công ATK, Chiến dịch Biên giới Thu Đông (1950) mở ra giai đoạn ta chuyển sang tổng phản công, cho đến chiến thắng lịch sử Điện Biên Phủ (7-5-1954) - quân ta đánh chiếm hầm chỉ huy địch."
+            },
+            {
+                title: "Các thế lực xâm lược và can thiệp (1945-1954)",
+                content: "Giai đoạn 1945-1954, nhân dân Việt Nam phải đối đầu với nhiều thế lực: Thực dân Pháp (kẻ thù chính), Quân Anh-Ấn (đổ bộ Nam Bộ), Quân Tưởng Giới Thạch (tràn vào Bắc Bộ), 6 vạn quân Nhật chưa giải giáp, và Mỹ (can thiệp trực tiếp, tài trợ Pháp). Chiến thắng là kết quả của ý chí kiên cường của toàn dân tộc."
+            }
+        ];
+
+        let completedRegions = 0;
+        let defeatedEnemies = 0;
+        let currentQuestion = null;
+        let currentRegion = null;
+        let currentQuestionIndex = -1;
+        let unlockedHistory = [];
+        let previousScreen = 'mapScreen';
+        let audioEnabled = true;
+        let currentMusic = null;
+
+        // Audio Management
+        const chapter1Music = document.getElementById('chapter1Music');
+        const chapter2Music = document.getElementById('chapter2Music');
+        const victoryMusic = document.getElementById('victoryMusic');
+
+        function playMusic(musicElement) {
+            if (!audioEnabled) return;
+            
+            stopAllMusic();
+            
+            currentMusic = musicElement;
+            musicElement.volume = 0.3;
+            musicElement.play().catch(e => console.log('Audio autoplay blocked. Click anywhere to enable.'));
+        }
+
+        function stopAllMusic() {
+            [chapter1Music, chapter2Music, victoryMusic].forEach(music => {
+                music.pause();
+                music.currentTime = 0;
+            });
+        }
+
+        function toggleAudio() {
+            audioEnabled = !audioEnabled;
+            const btn = document.getElementById('audioBtn');
+            
+            if (audioEnabled) {
+                btn.textContent = '🔊';
+                if (currentMusic) {
+                    currentMusic.play().catch(e => console.log('Audio play failed:', e));
+                }
+            } else {
+                btn.textContent = '🔇';
+                stopAllMusic();
+            }
+        }
+
+        // Load saved progress
+        function loadProgress() {
+            const saved = localStorage.getItem('vietnamGameProgress');
+            if (saved) {
+                const data = JSON.parse(saved);
+                completedRegions = data.completedRegions || 0;
+                defeatedEnemies = data.defeatedEnemies || 0;
+                unlockedHistory = data.unlockedHistory || [];
+                
+                if (completedRegions === 5) {
+                    document.getElementById('startAchievements').style.display = 'block';
+                }
+                
+                const regions = ['bac', 'bactb', 'namtb', 'taynguyen', 'nambo'];
+                for (let i = 0; i < completedRegions; i++) {
+                    document.getElementById(regions[i]).classList.add('completed');
+                }
+                
+                const enemies = ['france', 'britain', 'usa', 'japan', 'china'];
+                for (let i = 0; i < defeatedEnemies; i++) {
+                    document.getElementById(enemies[i]).classList.add('defeated');
+                }
+            }
+            renderHistory();
+        }
+
+        function saveProgress() {
+            const data = {
+                completedRegions,
+                defeatedEnemies,
+                unlockedHistory
+            };
+            localStorage.setItem('vietnamGameProgress', JSON.stringify(data));
+        }
+
+        function renderHistory() {
+            const container = document.getElementById('historyContent');
+            container.innerHTML = '';
+            
+            historyData.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                
+                if (unlockedHistory.includes(index)) {
+                    div.classList.add('unlocked');
+                    div.innerHTML = `<h3>${item.title}</h3><p>${item.content}</p>`;
+                } else {
+                    div.classList.add('locked');
+                    div.innerHTML = `<h3>${item.title}</h3><p>Trả lời câu hỏi để mở khóa...</p>`;
+                }
+                
+                container.appendChild(div);
+            });
+        }
+
+        function unlockHistory(index) {
+            if (!unlockedHistory.includes(index)) {
+                unlockedHistory.push(index);
+                saveProgress();
+                renderHistory();
+                showUnlockNotification();
+            }
+        }
+
+        function showUnlockNotification() {
+            const notification = document.getElementById('unlockNotification');
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 2000);
+        }
+
+        function toggleHistory() {
+            document.getElementById('historyPanel').classList.toggle('open');
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            
+            if (screenId === 'mapScreen') {
+                playMusic(chapter1Music);
+            } else if (screenId === 'battleScreen') {
+                playMusic(chapter2Music);
+            } else if (screenId === 'victoryScreen') {
+                playMusic(victoryMusic);
+            } else if (screenId === 'startScreen' || screenId === 'interludeScreen') {
+                stopAllMusic();
+            }
+        }
+
+        function startGame() {
+            if (completedRegions === 5) {
+                showScreen('interludeScreen');
+            } else {
+                showScreen('mapScreen');
+            }
+            document.getElementById('mapProgress').textContent = `Giải phóng: ${completedRegions}/5 vùng`;
+        }
+
+        function startBattle() {
+            showScreen('battleScreen');
+            document.getElementById('battleProgress').textContent = `Đánh bại: ${defeatedEnemies}/5 thế lực`;
+        }
+
+        function askQuestion(regionIndex) {
+            const regions = ['bac', 'bactb', 'namtb', 'taynguyen', 'nambo'];
+            const region = document.getElementById(regions[regionIndex]);
+            
+            if (region.classList.contains('completed')) return;
+            
+            previousScreen = 'mapScreen';
+            currentRegion = region;
+            currentQuestion = questions[regionIndex];
+            currentQuestionIndex = regionIndex;
+            displayQuestion(currentQuestion);
+            showScreen('questionScreen');
+        }
+
+        function battleQuestion(enemyIndex) {
+            const enemies = ['france', 'britain', 'usa', 'japan', 'china'];
+            const enemy = document.getElementById(enemies[enemyIndex]);
+            
+            if (enemy.classList.contains('defeated')) return;
+            
+            previousScreen = 'battleScreen';
+            currentRegion = enemy;
+            currentQuestion = questions[5 + enemyIndex];
+            currentQuestionIndex = 5 + enemyIndex;
+            displayQuestion(currentQuestion);
+            showScreen('questionScreen');
+        }
+
+        function closeQuestion() {
+            showScreen(previousScreen);
+        }
+
+        function displayQuestion(q) {
+            document.getElementById('questionText').textContent = q.text;
+            const container = document.getElementById('answersContainer');
+            container.innerHTML = '';
+            document.getElementById('submitBtn').style.display = 'none';
+            
+            if (q.type === 'multiple') {
+                q.options.forEach((opt, i) => {
+                    const div = document.createElement('div');
+                    div.className = 'answer-option';
+                    div.textContent = opt;
+                    div.onclick = () => selectAnswer(i);
+                    container.appendChild(div);
+                });
+            } else if (q.type === 'sort') {
+                container.className = 'sortable-container';
+                q.options.forEach((opt, i) => {
+                    const div = document.createElement('div');
+                    div.className = 'sortable-item';
+                    div.textContent = `${i + 1}. ${opt}`;
+                    div.draggable = true;
+                    div.dataset.index = i;
+                    div.ondragstart = handleDragStart;
+                    div.ondragover = handleDragOver;
+                    div.ondrop = handleDrop;
+                    div.ondragend = handleDragEnd;
+                    container.appendChild(div);
+                });
+                document.getElementById('submitBtn').style.display = 'inline-block';
+            } else if (q.type === 'checkbox') {
+                q.options.forEach((opt, i) => {
+                    const div = document.createElement('div');
+                    div.className = 'checkbox-option';
+                    div.innerHTML = `<input type="checkbox" id="cb${i}" value="${i}"><label for="cb${i}">${opt}</label>`;
+                    container.appendChild(div);
+                });
+                document.getElementById('submitBtn').style.display = 'inline-block';
+            }
+        }
+
+        function selectAnswer(index) {
+            if (currentQuestion.type !== 'multiple') return;
+            
+            const options = document.querySelectorAll('.answer-option');
+            options.forEach(opt => {
+                opt.onclick = null;
+                opt.style.cursor = 'default';
+            });
+            
+            if (index === currentQuestion.correct) {
+                options[index].classList.add('correct');
+                setTimeout(() => {
+                    handleCorrectAnswer();
+                }, 1000);
+            } else {
+                options[index].classList.add('wrong');
+                setTimeout(() => {
+                    options[currentQuestion.correct].classList.add('correct');
+                    setTimeout(() => {
+                        handleCorrectAnswer();
+                    }, 1500);
+                }, 500);
+            }
+        }
+
+        let draggedElement = null;
+
+        function handleDragStart(e) {
+            draggedElement = e.target;
+            e.target.classList.add('dragging');
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            if (draggedElement !== e.target && e.target.classList.contains('sortable-item')) {
+                const allItems = [...document.querySelectorAll('.sortable-item')];
+                const draggedIndex = allItems.indexOf(draggedElement);
+                const targetIndex = allItems.indexOf(e.target);
+                
+                if (draggedIndex < targetIndex) {
+                    e.target.parentNode.insertBefore(draggedElement, e.target.nextSibling);
+                } else {
+                    e.target.parentNode.insertBefore(draggedElement, e.target);
+                }
+            }
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+        }
+
+        function submitAnswer() {
+            if (currentQuestion.type === 'sort') {
+                const items = document.querySelectorAll('.sortable-item');
+                const order = Array.from(items).map(item => parseInt(item.dataset.index));
+                
+                if (JSON.stringify(order) === JSON.stringify(currentQuestion.correct)) {
+                    handleCorrectAnswer();
+                } else {
+                    alert('Thứ tự chưa chính xác! Hãy thử lại.');
+                }
+            } else if (currentQuestion.type === 'checkbox') {
+                const checked = Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(cb => parseInt(cb.value));
+                checked.sort((a, b) => a - b);
+                const correct = [...currentQuestion.correct].sort((a, b) => a - b);
+                
+                if (JSON.stringify(checked) === JSON.stringify(correct)) {
+                    handleCorrectAnswer();
+                } else {
+                    alert('Chưa chính xác! Hãy kiểm tra lại các đáp án.');
+                }
+            }
+        }
+
+        function handleCorrectAnswer() {
+            unlockHistory(currentQuestionIndex);
+            
+            document.getElementById('submitBtn').style.display = 'none';
+            
+            if (completedRegions < 5) {
+                currentRegion.classList.add('completed');
+                completedRegions++;
+                saveProgress();
+                document.getElementById('mapProgress').textContent = `Giải phóng: ${completedRegions}/5 vùng`;
+                
+                if (completedRegions === 5) {
+                    setTimeout(() => {
+                        showScreen('interludeScreen');
+                    }, 1500);
+                } else {
+                    setTimeout(() => {
+                        showScreen('mapScreen');
+                    }, 1000);
+                }
+            } else {
+                currentRegion.classList.add('defeated');
+                defeatedEnemies++;
+                saveProgress();
+                document.getElementById('battleProgress').textContent = `Đánh bại: ${defeatedEnemies}/5 thế lực`;
+                
+                if (defeatedEnemies === 5) {
+                    setTimeout(() => {
+                        showScreen('victoryScreen');
+                        createFireworks();
+                    }, 1500);
+                } else {
+                    setTimeout(() => {
+                        showScreen('battleScreen');
+                    }, 1000);
+                }
+            }
+        }
+
+        function createFireworks() {
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => {
+                    const fw = document.createElement('div');
+                    fw.className = 'firework';
+                    fw.style.left = Math.random() * 100 + '%';
+                    fw.style.top = Math.random() * 100 + '%';
+                    fw.style.animationDelay = Math.random() * 0.5 + 's';
+                    document.getElementById('victoryScreen').appendChild(fw);
+                    setTimeout(() => fw.remove(), 1000);
+                }, i * 200);
+            }
+        }
+
+        function deleteProgress() {
+            if (confirm('🗑️ Bạn có chắc muốn xóa toàn bộ tiến độ và thành tích đã mở khóa?')) {
+                localStorage.removeItem('vietnamGameProgress');
+                alert('✅ Đã xóa tiến độ! Trang sẽ tải lại.');
+                location.reload();
+            }
+        }
+
+        window.onload = function() {
+            loadProgress();
+        };
+    </script>
+</body>
+</html>
